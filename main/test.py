@@ -90,3 +90,7 @@ def contourDetect(edged_image, resized_image):
             print("未检测到矩形，请重新传入图片")
     cv2.drawContours(resized_image, [screenCnt], -1, (0, 255, 0), 2)
     showImg("outLine", resized_image)
+
+
+def new(a):
+    return a
