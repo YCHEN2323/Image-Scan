@@ -96,6 +96,10 @@ def contourDetect(edged_image, resized_image):
 
 # 四点计算
 def order_point(pts):
+    """
+    :param pts:  四个坐标值和ratio比例值的乘积(输入坐标)
+    :return: 返回计算好的坐标值
+    """
     # 四个坐标点
     rect = np.zeros((4, 2), dtype="float32")
     # 按顺序找到对应四个角的坐标点，分别为左上、右上、左下、右下。
@@ -117,10 +121,10 @@ def fourPointTransform(origin, pts):
     :param pts: 四个坐标值和ratio比例值的乘积(输入坐标)
     :return:    返回计算后的图像
     """
-    recen = order_point(pts)
-    (tL, tR, bR, bL) = recen
+    recen = order_point(pts)  # 进行四点坐标的获取
+    (tL, tR, bR, bL) = recen  # 分别读取四点坐标
 
-    # 计算输入的宽和高值
+    # 根据四点坐标计算输入的宽和高值
     widthA = np.sqrt(((bR[0] - bL[0]) ** 2) + ((bR[1] - bL[1]) ** 2))
     widthB = np.sqrt(((tR[0] - tL[0]) ** 2) + ((tR[1] - tL[1]) ** 2))
     maxWidth = max(int(widthA), int(widthB))  # 确保误差最小，使用长的边，因此找出计算后的最大值
