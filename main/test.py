@@ -56,7 +56,7 @@ def edgeDetect(image):
     """
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # 将图像转为灰度图
     gray = cv2.GaussianBlur(gray, (5, 5), 0)  # 高斯滤波函数，去除图像噪点
-    edged = cv2.Canny(gray, 100, 250)  # Canny算法，检测图像边缘
+    edged = cv2.Canny(gray, 50, 250)  # Canny算法，检测图像边缘
     cv2.imshow("Origin Image", image)  # 显示原始图片
     cv2.imshow("Edged Image", edged)  # 显示边缘检测后的图片
     cv2.waitKey(0)  # 等待任意键退出
@@ -73,6 +73,7 @@ def contourDetect(edged_image, resized_image):
     """
     cnts = cv2.findContours(edged_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[1]  # 获取到得到的外层轮廓
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:5]  # 根据获取到的外层轮廓计算每个轮廓的面积大小进行排序
+    screenCnt = None
     for c in cnts:  # 遍历轮廓值
         # 由于得到的图形轮廓并不一定都是矩形，因此对图像做一个近似处理
         peri = cv2.arcLength(c, True)  # 设置近似的
@@ -90,7 +91,52 @@ def contourDetect(edged_image, resized_image):
             print("未检测到矩形，请重新传入图片")
     cv2.drawContours(resized_image, [screenCnt], -1, (0, 255, 0), 2)
     showImg("outLine", resized_image)
+    return screenCnt
 
 
-def new(a):
-    return a
+# 四点计算
+def order_point(pts):
+    # 四个坐标点
+    rect = np.zeros((4, 2), dtype="float32")
+    # 按顺序找到对应四个角的坐标点，分别为左上、右上、左下、右下。
+    s = pts.sum(axis=1)
+    # 计算左上、右下
+    rect[0] = pts[np.argmin(s)]
+    rect[2] = pts[np.argmax(s)]
+    # 计算右上、左下
+    diff = np.diff(pts, axis=1)
+    rect[1] = pts[np.argmin(diff)]
+    rect[3] = pts[np.argmax(diff)]
+    return rect
+
+
+# 透视变换处理
+def fourPointTransform(origin, pts):
+    """
+    :param origin: 输入的原始图像
+    :param pts: 四个坐标值和ratio比例值的乘积(输入坐标)
+    :return:    返回计算后的图像
+    """
+    recen = order_point(pts)
+    (tL, tR, bR, bL) = recen
+
+    # 计算输入的宽和高值
+    widthA = np.sqrt(((bR[0] - bL[0]) ** 2) + ((bR[1] - bL[1]) ** 2))
+    widthB = np.sqrt(((tR[0] - tL[0]) ** 2) + ((tR[1] - tL[1]) ** 2))
+    maxWidth = max(int(widthA), int(widthB))  # 确保误差最小，使用长的边，因此找出计算后的最大值
+    heightA = np.sqrt(((tR[0] - bR[0]) ** 2) + ((tR[1] - bR[1]) ** 2))
+    heightB = np.sqrt(((tL[0] - bL[0]) ** 2) + ((tL[1] - bL[1]) ** 2))
+    maxHeight = max(int(heightA), int(heightB))
+
+    # 变换后对应坐标位置
+    dts = np.array([  # dts表示变换完成后的输出坐标
+        [0, 0],
+        [maxWidth - 1, 0],
+        [maxWidth - 1, maxHeight - 1],
+        [0, maxHeight - 1]], dtype="float32")
+
+    # 计算变换矩阵
+    M = cv2.getPerspectiveTransform(recen, dts)
+    warped = cv2.warpPerspective(origin, M, (maxWidth, maxHeight))
+    return warped  # 返回计算结果
+
