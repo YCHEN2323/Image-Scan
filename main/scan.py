@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # @Time : 2021/7/2 21:28
 # @Author : CY
-# @File : test.py
+# @File : scan.py
 # @Software : PyCharm
 
 import cv2  # 导入opencv库
