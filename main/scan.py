@@ -6,6 +6,7 @@
 
 import cv2  # 导入opencv库
 import numpy as np  # 导入numpy矩阵计算库
+import os
 
 
 # 展示图片的方法
@@ -83,12 +84,12 @@ def contourDetect(edged_image, resized_image):
         # 数值越大，则生成的近似轮廓会越规整，但准度会差，越小则近似轮廓越接近原始图像；一般先计算出边缘长度，
         # 用长度的百分之多少来决定精度的结果。
         # 3、True表示生成的近似图形是封闭的。
-        approx = cv2.approxPolyDP(c, 0.02 * peri, True)  # 对轮廓进行近似处理
+        approx = cv2.approxPolyDP(c, 0.01 * peri, True)  # 对轮廓进行近似处理
         if len(approx) == 4:  # 当轮廓近似完成后为四个点，则拿出近似轮廓
             screenCnt = approx
             break
         if len(approx) != 4:
-            print("未检测到矩形，请重新传入图片")
+            print("contourDetect未检测到矩形")
     cv2.drawContours(resized_image, [screenCnt], -1, (0, 255, 0), 2)
     showImg("outLine", resized_image)
     return screenCnt
@@ -144,3 +145,31 @@ def fourPointTransform(origin, pts):
     warped = cv2.warpPerspective(origin, M, (maxWidth, maxHeight))
     return warped  # 返回计算结果
 
+
+# 读取当前‘image‘包下的图片
+def scan_read_allImage():
+    """
+    :return: 返回一个包含image包下所有文件名的数组
+    """
+    lists = os.listdir('../image')
+    if len(lists) > 0:
+        print("已获取到image包下的图片：")
+        count = 1
+        for i in lists:
+            print(str(count) + "、" + i)
+            count += 1
+        return lists
+    else:
+        print("读取image包失败，请检查图片是否导入成功")
+
+
+# 将生成的图片连接成长串并生成pdf
+def save_image_by_pdf():
+    lists = os.listdir('../target_image')
+    result_image_list = []
+    for i in lists:
+        image = cv2.imread("../target_image/" + i)
+        showImg("result", image)
+        result_image_list.append(image)
+    result = np.hstack(result_image_list)
+    showImg("result", result)

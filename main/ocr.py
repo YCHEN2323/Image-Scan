@@ -26,10 +26,10 @@ import scan
 
 
 # ocr识别判断
-def ocr_judge():
+def ocr_judge(name):
     preprocess = 'blur'
 
-    image = cv2.imread("../target_image/scanned.jpg")
+    image = cv2.imread("../target_image/" + name)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     if preprocess == 'thresh':
