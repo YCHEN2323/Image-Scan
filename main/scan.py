@@ -160,7 +160,7 @@ def scan_read_allImage():
             count += 1
         return lists
     else:
-        print("读取image包失败，请检查图片是否导入成功")
+        print("读取image包失败")
 
 
 # 将生成的图片连接成长串并生成pdf
